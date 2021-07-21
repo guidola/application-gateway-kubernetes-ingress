@@ -78,7 +78,6 @@ func (c *Clientset) Tracker() testing.ObjectTracker {
 
 var (
 	_ clientset.Interface = &Clientset{}
-	_ testing.FakeClient  = &Clientset{}
 )
 
 // AzureglobalservicesV1alpha1 retrieves the AzureglobalservicesV1alpha1Client
