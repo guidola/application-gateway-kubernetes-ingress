@@ -400,6 +400,41 @@ var _ = Describe("Test routing rules generations", func() {
 		})
 	})
 
+	Context("test rewrite ruleset is configured in rule path", func() {
+		configBuilder := newConfigBuilderFixture(nil)
+		endpoint := tests.NewEndpointsFixture()
+		service := tests.NewServiceFixture(*tests.NewServicePortsFixture()...)
+		ingress := tests.NewIngressTestFixture(tests.Namespace, tests.Name)
+		ingress.Annotations[annotations.RewriteRuleSet] = "test"
+
+		_ = configBuilder.k8sContext.Caches.Endpoints.Add(endpoint)
+		_ = configBuilder.k8sContext.Caches.Service.Add(service)
+		_ = configBuilder.k8sContext.Caches.Ingress.Add(ingress)
+
+		cbCtx := &ConfigBuilderContext{
+			IngressList:           []*networking.Ingress{&ingress},
+			ServiceList:           []*v1.Service{service},
+			DefaultAddressPoolID:  to.StringPtr("xx"),
+			DefaultHTTPSettingsID: to.StringPtr("yy"),
+		}
+
+		_ = configBuilder.BackendHTTPSettingsCollection(cbCtx)
+		_ = configBuilder.BackendAddressPools(cbCtx)
+		_ = configBuilder.Listeners(cbCtx)
+
+		// !! Action !! -- will mutate pathMap struct
+		pathMap := configBuilder.getPathMaps(cbCtx)
+
+		rule := &ingress.Spec.Rules[0]
+		listenerID := generateListenerID(&ingress, rule, n.HTTP, nil, false)
+		It("has rewrite ruleset in pathRule", func() {
+			prs := pathMap[listenerID].ApplicationGatewayURLPathMapPropertiesFormat
+			for _, r := range *prs.PathRules {
+				Expect(r.RewriteRuleSet.ID).To(Equal(to.StringPtr(configBuilder.appGwIdentifier.rewriteRuleSetID("test"))))
+			}
+		})
+	})
+
 	Context("test ssl redirect is configured correctly when a basic rule is created", func() {
 		configBuilder := newConfigBuilderFixture(nil)
 		secret := tests.NewSecretTestFixture()

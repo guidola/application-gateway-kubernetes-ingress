@@ -987,6 +987,25 @@ var _ = ginkgo.Describe("Tests `appgw.ConfigBuilder`", func() {
 			check(cbCtx, "waf_annotation.json", stopChannel, ctxt, configBuilder)
 		})
 
+		ginkgo.It("RewriteRuleSet Annotation", func() {
+			annotatedIngress := ingressSlashNothingSlashSomething
+			annotatedIngress.Annotations[annotations.RewriteRuleSet] = "test"
+
+			cbCtx := &ConfigBuilderContext{
+				IngressList: []*networking.Ingress{
+					annotatedIngress,
+				},
+				ServiceList:  serviceList,
+				EnvVariables: environment.GetFakeEnv(),
+				ExistingPortsByNumber: map[Port]n.ApplicationGatewayFrontendPort{
+					Port(80): fixtures.GetDefaultPort(),
+				},
+				DefaultAddressPoolID:  to.StringPtr("xx"),
+				DefaultHTTPSettingsID: to.StringPtr("yy"),
+			}
+			check(cbCtx, "rewrite_ruleset_annotation.json", stopChannel, ctxt, configBuilder)
+		})
+
 		ginkgo.It("Health Probes: same container labels; different namespaces", func() {
 			cbCtx := &ConfigBuilderContext{
 				IngressList: []*v1beta1.Ingress{

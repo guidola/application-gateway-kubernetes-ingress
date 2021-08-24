@@ -316,6 +316,15 @@ func (c *appGwConfigBuilder) getPathRules(cbCtx *ConfigBuilderContext, listenerI
 			klog.V(5).Infof("Attach Firewall Policy %s to Path Rule %s", wafPolicy, paths)
 		}
 
+		if rewriteRuleSet, err := annotations.GetRewriteRuleSet(ingress); err == nil {
+			pathRule.RewriteRuleSet = &n.SubResource{ID: to.StringPtr(c.appGwIdentifier.rewriteRuleSetID(rewriteRuleSet))}
+			var paths string
+			if pathRule.Paths != nil {
+				paths = strings.Join(*pathRule.Paths, ",")
+			}
+			klog.V(5).Infof("Attach RewriteRuleSet %s to Path Rule %s", rewriteRuleSet, paths)
+		}
+
 		if sslRedirect, _ := annotations.IsSslRedirect(ingress); sslRedirect && listenerAzConfig.Protocol == n.HTTP {
 			targetListener := listenerID
 			targetListener.FrontendPort = 443

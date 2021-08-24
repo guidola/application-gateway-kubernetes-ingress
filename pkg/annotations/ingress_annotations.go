@@ -93,11 +93,17 @@ const (
 	// The policy will be attached to all URL paths declared in the annotated Ingress resource.
 	FirewallPolicy = ApplicationGatewayPrefix + "/waf-policy-for-path"
 
+	// RewriteRuleSet is the key part of a key/value Ingress annotation.
+	// The value of this is the name of an already existing Application Gateway RewriteRuleSet. The RewriteRuleSet must
+	// be already registered in the Application Gateway. The RewriteRuleSet will be attached to all URL paths declared
+	// in the annotated Ingress resource.
+	RewriteRuleSet = ApplicationGatewayPrefix + "/rewrite-ruleset"
+
 	// AppGwSslCertificate indicates the name of ssl certificate installed by AppGw
 	AppGwSslCertificate = ApplicationGatewayPrefix + "/appgw-ssl-certificate"
 
 	// AppGwTrustedRootCertificate indicates the names of trusted root certificates
-	// Multiple root certificates seperated by comma, e.g. "cert1,cert2"
+	// Multiple root certificates separated by comma, e.g. "cert1,cert2"
 	AppGwTrustedRootCertificate = ApplicationGatewayPrefix + "/appgw-trusted-root-certificate"
 )
 
@@ -275,6 +281,11 @@ func GetHostNameExtensions(ing *v1beta1.Ingress) ([]string, error) {
 // WAFPolicy override path
 func WAFPolicy(ing *v1beta1.Ingress) (string, error) {
 	return parseString(ing, FirewallPolicy)
+}
+
+// GetRewriteRuleSet name to define
+func GetRewriteRuleSet(ing *v1beta1.Ingress) (string, error) {
+	return parseString(ing, RewriteRuleSet)
 }
 
 func parseBool(ing *v1beta1.Ingress, name string) (bool, error) {

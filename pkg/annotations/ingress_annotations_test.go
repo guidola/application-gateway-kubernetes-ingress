@@ -58,6 +58,7 @@ var _ = Describe("Test ingress annotation functions", func() {
 		"appgw.ingress.kubernetes.io/health-probe-interval":            "15",
 		"appgw.ingress.kubernetes.io/health-probe-timeout":             "10",
 		"appgw.ingress.kubernetes.io/health-probe-unhealthy-threshold": "3",
+		"appgw.ingress.kubernetes.io/rewrite-ruleset":                  "test-rewrite-ruleset",
 		"kubernetes.io/ingress.class":                                  "azure/application-gateway",
 		"appgw.ingress.istio.io/v1alpha3":                              "azure/application-gateway",
 		"falseKey":                                                     "false",
@@ -397,6 +398,21 @@ var _ = Describe("Test ingress annotation functions", func() {
 			hostnames, err := GetHostNameExtensions(ing)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(hostnames).To(Equal([]string{"www.bye.com", "www.b*.com"}))
+		})
+	})
+
+	Context("test GetRewriteRuleSet", func() {
+		It("returns error when ingress has no annotations", func() {
+			ing := &networking.Ingress{}
+			ruleset, err := GetRewriteRuleSet(ing)
+			Expect(err).To(HaveOccurred())
+			Expect(ruleset).To(BeEmpty())
+		})
+
+		It("returns correct hostnames", func() {
+			ruleset, err := GetRewriteRuleSet(ing)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(ruleset).To(Equal("test-rewrite-ruleset"))
 		})
 	})
 
